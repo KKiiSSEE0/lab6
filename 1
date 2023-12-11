@@ -1,1 +1,42 @@
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCS7cqQLCxNQsb8LsK2BTCAfjhgquUjaN4c0QWq0sFZMYQdlrWMar9YxduUtVkAPeBrAVpQWdSE7JapIvNr2Vv5xad2TH2CpRX4MzYUSyJ6QRaMIsRPgK3Gv/44CYqJ1GnNe1bSVe6P3z6JZ1cMI4kub0i/pRSMdrRd7Gd2Czcu802tTSxHUcmXPb6K+FoZz8caBtytBfqxQWeXKDwJjtxfhJJlvDzpuaeqT/nv2Abq22EJcMo1Ypggjwx/FkN9aQFKlS+oMnXn3YhNRJn2OVLWLXEr0ZPzhSiwr4Mc4zqyk09IyufBZqkCt0oBHDIoTSszmWzz6nuHd6+S+TX7DEw00q19WcBdeWCSSPrH4cx+jpMIpCz6TEpM6A61hOtdFSkhVmA5bd3EvjkjBdAMiW0ql6mcsZiRPkPHxzwKXkQ02qaIS1g4n0ubzfAnHRPuVaRTTcqYdhqJ65WonigGwIqLb+t/aL/M2fE86ybGcT43uvodG6+4X5+GxLtEpULZXqc= daniil@daniil-VirtualBox
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+
+#define MAX_MSG_SIZE 256
+
+struct msg_buffer {
+long msg_type;
+char msg_text[MAX_MSG_SIZE];
+};
+
+int main() {
+int msgid;
+key_t key;
+struct msg_buffer msg;
+
+
+key = ftok("/tmp", 65);
+
+// Получаем доступ к очереди сообщений
+msgid = msgget(key, 0666 | IPC_CREAT);
+
+// Отправляем сообщения серверу
+int num_clients = 5; // Задайте количество клиентов
+
+for (int i = 0; i < num_clients; i++) {
+time_t t = time(NULL);
+snprintf(msg.msg_text, sizeof(msg.msg_text), "Client %d: Current time is %s", i, ctime(&t));
+msg.msg_type = 1;
+
+msgsnd(msgid, &msg, sizeof(msg), 0);
+
+sleep(5);
+}
+
+return 0;
+}
